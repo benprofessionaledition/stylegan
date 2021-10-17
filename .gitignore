@@ -238,6 +238,6 @@ Temporary Items
 
 Dataset/
 logs/
-.ignored/
+resources/.ignored/
 *.jpg
 
