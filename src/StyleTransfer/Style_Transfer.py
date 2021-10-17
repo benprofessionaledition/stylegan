@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
 import torchvision.transforms as T
+from IPython.display import clear_output
 from tqdm import tqdm
 
 mpl.rcParams["figure.figsize"] = (14, 7);
