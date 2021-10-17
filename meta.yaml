@@ -1,0 +1,36 @@
+package:
+  name: tospax
+  version: 0.0.1
+
+source:
+  git_tag:
+  git_url: https://github.com/benprofessionaledition/stylegan.git
+
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+    - torch
+    - torchvision
+    - tensorboard
+    - numpy
+    - pandas
+    - matplotlib
+    - IPython
+    - tqdm
+
+test:
+  source_files:
+    - tospax/*
+  imports:
+    - torch
+    - torchvision
+  commands:
+    - python3 -m unittest
+
+
+about:
+  home: https://github.com/benprofessionaledition/stylegan
+  summary: some stylegan shit

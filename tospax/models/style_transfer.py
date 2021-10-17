@@ -1,3 +1,5 @@
+from typing import Tuple, Union
+
 import PIL.Image as Image
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -10,7 +12,7 @@ import torchvision.transforms as T
 from IPython.display import clear_output
 from tqdm import tqdm
 
-mpl.rcParams["figure.figsize"] = (14, 7);
+mpl.rcParams["figure.figsize"] = (14, 7)
 mpl.rcParams["axes.grid"] = False
 
 # ***********************************************************************************************************************
@@ -32,7 +34,7 @@ class ImageLoader:
             size:
                 Desired output size. If size is a sequence like (h, w), output size will
                 be matched to this. If size is an int, smaller edge of the image will be
-                matched to this number; i.e, if height > width, then image will be resca
+                matched to this number i.e, if height > width, then image will be resca
                 led to (size * height / width, size)
 
             resize:
@@ -46,7 +48,7 @@ class ImageLoader:
         if resize: transforms.append(T.Resize(size=size, interpolation=interpolation))
 
         # compulsory to add this transformation to the list
-        transforms.append(T.ToTensor());
+        transforms.append(T.ToTensor())
         self.transforms = T.Compose(transforms)
 
     def read_image(self, filepath: str) -> torch.tensor:
@@ -56,7 +58,7 @@ class ImageLoader:
             Transformed torch tensor
         """
 
-        image = Image.open(fp=filepath);
+        image = Image.open(fp=filepath)
         image = self.transforms(image)
         image = image.to(device, torch.float)
 
@@ -68,10 +70,14 @@ class ImageLoader:
         """
         Args:
             save_: If set to True, will save the image with filename "filename"
+            :param filename:
+            :param save_:
+            :param title:
+            :param tensor:
         """
 
         # Clone the tensor to CPU (to avoid any modifications to the original tensor)
-        tensor = tensor.cpu().clone();
+        tensor = tensor.cpu().clone()
 
         # squeeze or unsqueeze the tensor to bring it to an appropiate shape
         if len(tensor.shape) == 4:
@@ -82,10 +88,10 @@ class ImageLoader:
             raise ValueError(f"Bad Input shape:: {tensor.shape}")
 
         # transform the tensor to PIL Image
-        transforms = T.ToPILImage();
+        transforms = T.ToPILImage()
         img = transforms(tensor)
-        plt.imshow(img);
-        plt.title(title);
+        plt.imshow(img)
+        plt.title(title)
         plt.pause(0.001)
 
         if save_: img.save(fp=filename)
@@ -106,7 +112,7 @@ class MyModel(nn.Module):
             stdv: Stdv to normalize the input tensor
         """
 
-        super().__init__();  # call the initializer of the super class
+        super().__init__()  # call the initializer of the super class
 
         mapping_dict = {"conv1_1": 0, "conv1_2": 2,
                         "conv2_1": 5, "conv2_2": 7,
@@ -121,8 +127,8 @@ class MyModel(nn.Module):
 
         # create an integer mapping of the layer names
         # +1 to get the output of ReLu layer
-        self.con_layers = [(mapping_dict[layer] + 1) for layer in con_layers];
-        self.sty_layers = [(mapping_dict[layer] + 1) for layer in sty_layers];
+        self.con_layers = [(mapping_dict[layer] + 1) for layer in con_layers]
+        self.sty_layers = [(mapping_dict[layer] + 1) for layer in sty_layers]
         self.all_layers = self.con_layers + self.sty_layers
 
         # Initialize a pre-trained model in eval() mode since we don't want to update
@@ -137,15 +143,15 @@ class MyModel(nn.Module):
 
     def forward(self, tensor: torch.Tensor) -> dict:
 
-        sty_feat_maps = [];
-        con_feat_maps = [];
+        sty_feat_maps = []
+        con_feat_maps = []
         # normalize the input tensor and add the batch dimension
-        tensor = self.transforms(tensor);
+        tensor = self.transforms(tensor)
         x = tensor.unsqueeze(0)
 
         # collect the required feature maps
         for name, layer in self.vgg19.named_children():
-            x = layer(x);
+            x = layer(x)
             if int(name) in self.con_layers: con_feat_maps.append(x)
             if int(name) in self.sty_layers: sty_feat_maps.append(x)
 
@@ -155,7 +161,7 @@ class MyModel(nn.Module):
 
 class NeuralStyleTransfer:
 
-    def __init__(self, con_image: torch.Tensor, sty_image: torch.Tensor, size=512, con_layers: list = None,
+    def __init__(self, con_image: torch.Tensor, sty_image: torch.Tensor, size: Union[int, Tuple]=512, con_layers: list = None,
                  sty_layers: list = None, con_loss_wt: float = 1., sty_loss_wt: float = 1., var_loss_wt=1.):
 
         """
@@ -165,10 +171,10 @@ class NeuralStyleTransfer:
             var_loss_wt: Weightage of the Variational loss
         """
 
-        self.con_loss_wt = con_loss_wt;
-        self.sty_loss_wt = sty_loss_wt;
-        self.var_loss_wt = var_loss_wt;
-        self.size = size;
+        self.con_loss_wt = con_loss_wt
+        self.sty_loss_wt = sty_loss_wt
+        self.var_loss_wt = var_loss_wt
+        self.size = size
 
         # initialize the model
         self.model = MyModel(con_layers=con_layers, sty_layers=sty_layers)
@@ -200,18 +206,18 @@ class NeuralStyleTransfer:
         Returns: Normalized Gram Matrix of the input tensor
         """
 
-        b, c, h, w = tensor.size();
-        tensor_ = tensor.view(b * c, h * w);
+        b, c, h, w = tensor.size()
+        tensor_ = tensor.view(b * c, h * w)
         gram_matrix = torch.mm(tensor_, tensor_.t())
 
         return gram_matrix
 
     def _get_sty_loss(self, pred: torch.Tensor, target: torch.Tensor):
 
-        Z = np.power(np.prod(pred.size()), 2, dtype=np.float64)
+        z = np.power(np.prod(pred.size()), 2, dtype=np.float64)
         pred = self._get_gram_matrix(pred)
 
-        return 0.25 * torch.sum(torch.pow(pred - target, 2)).div(Z)
+        return 0.25 * torch.sum(torch.pow(pred - target, 2)).div(z)
 
     def _get_tot_loss(self, output: torch.Tensor):
 
@@ -220,10 +226,10 @@ class NeuralStyleTransfer:
 
         """
 
-        con_output = output["Con_features"];
-        nb_con_layers = len(con_output);
-        sty_output = output["Sty_features"];
-        nb_sty_layers = len(sty_output);
+        con_output = output["Con_features"]
+        nb_con_layers = len(con_output)
+        sty_output = output["Sty_features"]
+        nb_sty_layers = len(sty_output)
 
         # calculate the content and style loss for each layer
         con_loss = [self._get_con_loss(con_output[idx], self.con_target[idx]) for idx in range(nb_con_layers)]
@@ -239,13 +245,13 @@ class NeuralStyleTransfer:
     def _print_statistics(self, epoch: int, image: torch.Tensor, tot_loss: torch.Tensor, con_loss: torch.Tensor,
                           sty_loss: torch.Tensor, var_loss: torch.Tensor):
 
-        loader = ImageLoader(size=self.size, resize=True);
+        loader = ImageLoader(size=self.size, resize=True)
         clear_output(wait=True)
         loader.show_image(image.data.clamp_(0, 1), title="Output_Image")
 
-        sty_loss = round(sty_loss.item(), 4);
+        sty_loss = round(sty_loss.item(), 4)
         con_loss = round(con_loss.item(), 4)
-        tot_loss = round(tot_loss.item(), 4);
+        tot_loss = round(tot_loss.item(), 4)
         var_loss = round(var_loss.item(), 4)
 
         print(f"After epoch {epoch + 1}:: Tot_loss: {tot_loss}")
@@ -264,14 +270,14 @@ class NeuralStyleTransfer:
         for epoch in range(nb_epochs):
             print("Epoch {}:".format(epoch))
             for _ in tqdm(range(nb_iters)):
-                self.var_image.data.clamp_(0, 1);
-                optimizer.zero_grad();
-                output = self.model(self.var_image);
+                self.var_image.data.clamp_(0, 1)
+                optimizer.zero_grad()
+                output = self.model(self.var_image)
 
                 con_loss, sty_loss, var_loss = self._get_tot_loss(output)
                 tot_loss = con_loss + sty_loss + var_loss
 
-                tot_loss.backward();
+                tot_loss.backward()
                 optimizer.step()
 
             self._print_statistics(epoch, image=self.var_image, tot_loss=tot_loss,
@@ -283,9 +289,9 @@ class NeuralStyleTransfer:
 # ***********************************************************************************************************************
 
 
-con_img_fp = "/home/ben/ide/stylegan/resources/.ignored/content.jpg";
+con_img_fp = "/home/ben/ide/stylegan/resources/.ignored/content.jpg"
 sty_img_fp = "/home/ben/ide/stylegan/resources/.ignored/style.jpg"
-img_loader = ImageLoader(size=(512, 512), resize=True, interpolation=2);
+img_loader = ImageLoader(size=(512, 512), resize=True, interpolation=2)
 
 con_image = img_loader.read_image(filepath=con_img_fp)
 sty_image = img_loader.read_image(filepath=sty_img_fp)
@@ -293,15 +299,15 @@ sty_image = img_loader.read_image(filepath=sty_img_fp)
 img_loader.show_image(con_image, title="Content Image")
 img_loader.show_image(sty_image, title="Style Image")
 
-con_layers = ["conv4_2"];
-sty_layers = ["conv1_1", "conv2_1", "conv3_1", "conv4_1", "conv5_1"];
+con_layers = ["conv4_2"]
+sty_layers = ["conv1_1", "conv2_1", "conv3_1", "conv4_1", "conv5_1"]
 
-_NST_ = NeuralStyleTransfer(con_image=con_image, sty_image=sty_image, size=(512, 512), con_layers=con_layers,
+_NST_ = NeuralStyleTransfer(con_image=con_image, sty_image=sty_image, size=(512,512), con_layers=con_layers,
                             sty_layers=sty_layers, con_loss_wt=1e-5, sty_loss_wt=1e4, var_loss_wt=5e-5)
 
 output_image = _NST_.fit(nb_epochs=10, nb_iters=1000, lr=1e-2, eps=1e-8, betas=(0.9, 0.999))
 
-img_loader = ImageLoader(size=512, resize=True);
-img_loader.show_image(output_image, save_=True, filename="Stylized_Image.jpg")
+img_loader = ImageLoader(size=512, resize=True)
+img_loader.show_image(output_image, save_=True, filename="../../resources/.ignored/Stylized_Image.jpg")
 
 # ***********************************************************************************************************************

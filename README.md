@@ -9,7 +9,7 @@ Basically all credit goes to that guy
 ***
 ### Edit 2020/11/20:
 
-> Support of [PyTorch Lightning](https://www.pytorchlightning.ai/) added to Neural Style Transfer, CycleGAN and Pix2Pix. Thanks to @[William](https://twitter.com/_willfalcon?lang=en)!
+> Support of [PyTorch Lightning](https://www.pytorchlightning.ai/) added to Neural Style Transfer, cyclegan and pix2pix. Thanks to @[William](https://twitter.com/_willfalcon?lang=en)!
 
 
 > Why PyTorch Lightning?
@@ -26,7 +26,7 @@ Basically all credit goes to that guy
 
 <p align = "justify"> Creativity is something we closely associate with what it means to be human. But with digital technology now enabling machines to recognize, learn from, and respond to humans, an inevitable question follows: <i> Can machines be creative? </i> </p>
 
-<p align = "justify"> It could be argued that the ability of machines to learn what things look like, and then make convincing new examples marks the advent of creative AI. This tutorial will cover four different Deep Learning models to create novel arts, solely by code - <b> Style Transfer, Pix2Pix, CycleGAN. </b> </p>
+<p align = "justify"> It could be argued that the ability of machines to learn what things look like, and then make convincing new examples marks the advent of creative AI. This tutorial will cover four different Deep Learning models to create novel arts, solely by code - <b> Style Transfer, pix2pix, cyclegan. </b> </p>
 
 ***
 
@@ -167,7 +167,7 @@ The brush-strokes that we get after running the experiment taking different laye
 
 ***
 
-## [Pix2Pix](https://arxiv.org/pdf/1611.07004.pdf)
+## [pix2pix](https://arxiv.org/pdf/1611.07004.pdf)
 
 <img width="1000" src="https://user-images.githubusercontent.com/41862477/82241656-2aa84a80-995a-11ea-9968-686294f97414.png">
 
@@ -261,7 +261,7 @@ min L<sub>LSGAN</sub> (G) = 1/2 <b>E</b><sub>x,z</sub> [(D(x, G(x, z)) - 1)<sup>
 
 ***
 
-## [CycleGAN](https://arxiv.org/pdf/1703.10593.pdf)
+## [cyclegan](https://arxiv.org/pdf/1703.10593.pdf)
 
 <img width="1000" src="https://user-images.githubusercontent.com/41862477/82723149-4c9f2580-9cea-11ea-98cf-bf80e2428a4b.png">
 
