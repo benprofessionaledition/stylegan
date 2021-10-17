@@ -86,8 +86,8 @@ class CustomDataset(Dataset):
 
         super().__init__()
 
-        con_img_filepath = root_path + "Content.jpg"
-        sty_img_filepath = root_path + "Style.jpg"
+        con_img_filepath = root_path + "content.jpg"
+        sty_img_filepath = root_path + "style.jpg"
 
         con_img = tfms(io.imread(con_img_filepath))
         sty_img = tfms(io.imread(sty_img_filepath))
@@ -131,13 +131,13 @@ class DataModule(pl.LightningDataModule):
 
         if self.con_img_url:
             tmp_con_img_filename = download(self.con_img_url, tmp_dir)
-            con_img_filename = "/".join(tmp_con_img_filename.split("/")[:-2]) + "/Content.jpg"
+            con_img_filename = "/".join(tmp_con_img_filename.split("/")[:-2]) + "/content.jpg"
             shutil.move(tmp_con_img_filename, con_img_filename)
             print("Content Image downloaded and moved successfully!")
 
         if self.sty_img_url:
             tmp_sty_img_filename = download(self.sty_img_url, tmp_dir)
-            sty_img_filename = "/".join(tmp_sty_img_filename.split("/")[:-2]) + "/Style.jpg"
+            sty_img_filename = "/".join(tmp_sty_img_filename.split("/")[:-2]) + "/style.jpg"
             shutil.move(tmp_sty_img_filename, sty_img_filename)
             print("Style Image downloaded and moved successfully!")
 
