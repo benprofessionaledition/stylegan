@@ -1,6 +1,8 @@
 
 
 from Imports import *
+from utils import download
+
 warnings.filterwarnings("ignore")
 
 
@@ -128,13 +130,13 @@ class DataModule(pl.LightningDataModule):
         os.makedirs(tmp_dir, exist_ok = True)
 
         if self.con_img_url:
-            tmp_con_img_filename = wget.download(self.con_img_url, tmp_dir)
+            tmp_con_img_filename = download(self.con_img_url, tmp_dir)
             con_img_filename = "/".join(tmp_con_img_filename.split("/")[:-2]) + "/Content.jpg"
             shutil.move(tmp_con_img_filename, con_img_filename)
             print("Content Image downloaded and moved successfully!")
 
         if self.sty_img_url:
-            tmp_sty_img_filename = wget.download(self.sty_img_url, tmp_dir)
+            tmp_sty_img_filename = download(self.sty_img_url, tmp_dir)
             sty_img_filename = "/".join(tmp_sty_img_filename.split("/")[:-2]) + "/Style.jpg"
             shutil.move(tmp_sty_img_filename, sty_img_filename)
             print("Style Image downloaded and moved successfully!")
@@ -197,7 +199,7 @@ con_img, sty_img = dm.train[0]["A"], dm.train[0]["B"]
 plt.figure(figsize = (12, 6))
 plt.subplot(1, 2, 1); helper(con_img, title = "Content Image")
 plt.subplot(1, 2, 2); helper(sty_img, title = "Style Image"  )
-plt.show())
+plt.show()
 
 
 ######################################################################################################################################
@@ -475,7 +477,7 @@ tb_logger = pl_loggers.TensorBoardLogger('logs/', name = "StyleTransfer", log_gr
 model = StyleTransfer(con_img = con_img, sty_img = sty_img, con_layers = con_layers, sty_layers = sty_layers,
                       lr = 2e-2, beta_1 = 0.9, beta_2 = 0.999, con_wt = 1e-5, sty_wt = 1e4, var_wt = 1e-5)
 
-trainer = pl.Trainer(accelerator = 'ddp', gpus = 1, max_epochs = epochs, progress_bar_refresh_rate = 1, logger = tb_logger, profiler = True)
+trainer = pl.Trainer(accelerator = 'ddp', gpus = 0, max_epochs = epochs, progress_bar_refresh_rate = 1, logger = tb_logger)
 trainer.fit(model, dm)
 
 final_img = model.var_img.detach().cpu().numpy()

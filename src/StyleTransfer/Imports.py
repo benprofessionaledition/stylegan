@@ -1,6 +1,6 @@
 
 import numpy as np
-import os, wget, zipfile, shutil
+import os, zipfile, shutil
 import warnings, itertools, functools
 
 from collections import OrderedDict

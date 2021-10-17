@@ -4,6 +4,7 @@
 
 # User-specific stuff
 .idea/
+.conda/
 
 # Generated files
 .idea/**/contentModel.xml
@@ -234,4 +235,9 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+Dataset/
+logs/
+.ignored/
+*.jpg
 

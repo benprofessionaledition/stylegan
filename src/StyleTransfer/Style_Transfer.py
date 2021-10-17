@@ -3,7 +3,9 @@ import torch, torch.nn as nn, torch.nn.functional as F,  torch.optim as optim
 import torchvision, torchvision.models as models, torchvision.transforms as T
 
 import numpy as np, pandas as pd, matplotlib as mpl, matplotlib.pyplot as plt
-import PIL.Image as Image, warnings; from IPython.display import clear_output
+import PIL.Image as Image, warnings
+from IPython.display import clear_output
+from tqdm import tqdm
 
 mpl.rcParams["figure.figsize"] = (14, 7); mpl.rcParams["axes.grid"] = False
 
@@ -249,8 +251,8 @@ class NeuralStyleTransfer:
         optimizer = optim.Adam([self.var_image], lr = lr, betas = betas, eps = eps)
 
         for epoch in range(nb_epochs):
-            for iter_ in range(nb_iters):
-
+            print("Epoch {}:".format(epoch))
+            for _ in tqdm(range(nb_iters)):
                 self.var_image.data.clamp_(0, 1); optimizer.zero_grad();
                 output = self.model(self.var_image);
 
@@ -283,7 +285,7 @@ con_layers = ["conv4_2"]; sty_layers = ["conv1_1", "conv2_1", "conv3_1", "conv4_
 _NST_ = NeuralStyleTransfer(con_image = con_image, sty_image = sty_image, size = (512, 512), con_layers = con_layers,
                             sty_layers = sty_layers, con_loss_wt = 1e-5, sty_loss_wt = 1e4, var_loss_wt = 5e-5)
 
-output_image = _NST_.fit(nb_epochs = 10, nb_iters = 1000, lr = 1e-2, eps = 1e-8, betas = (0.9, 0.999))
+output_image = _NST_.fit(nb_epochs = 1, nb_iters = 20, lr = 1e-2, eps = 1e-8, betas = (0.9, 0.999))
 
 img_loader = ImageLoader(size = 512, resize = True);
 img_loader.show_image(output_image, save_ = True, filename = "Stylized_Image.jpg")
