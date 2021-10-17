@@ -1,3 +1,9 @@
+Note - I cloned this from https://github.com/Adi-iitd/AI-Art.git
+
+I fucked around with it in place instead of forking properly, made a new repo to preserve my sanity
+
+Basically all credit goes to that guy
+
 # AI Art
 
 ***
