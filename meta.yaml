@@ -1,5 +1,5 @@
 package:
-  name: tospax
+  name: creative-ai
   version: 0.0.1
 
 source:
@@ -27,13 +27,13 @@ requirements:
 
 test:
   source_files:
-    - tospax/
+    - creative_ai/
   imports:
     - torch
     - torchvision
   commands:
     - ls -la
-    - python3 -m unittest tospax/tests
+    - python3 -m unittest creative_ai/tests
 
 
 about:

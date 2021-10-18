@@ -1,5 +1,7 @@
 from typing import Tuple, Union
-
+import math
+import time 
+import os
 import PIL.Image as Image
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -9,24 +11,27 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
 import torchvision.transforms as T
+from torch.utils.tensorboard import SummaryWriter
+
 from IPython.display import clear_output
 from tqdm import tqdm
 
 mpl.rcParams["figure.figsize"] = (14, 7)
 mpl.rcParams["axes.grid"] = False
 
-# ***********************************************************************************************************************
+run_id = round(time.time() * 1000)
+
+TB_LOG_DIR = "/home/ben/ide/stylegan/resources/.ignored/logs/{}".format(run_id)
+os.makedirs(TB_LOG_DIR, exist_ok=True)
+
+writer = SummaryWriter(TB_LOG_DIR)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Device in use: {device}")
 
-
-# ***********************************************************************************************************************
-
-
 class ImageLoader:
 
-    def __init__(self, size: (int, tuple), resize: bool = True, interpolation=2):
+    def __init__(self, size: Union[int, tuple], resize: bool = True, interpolation=2):
 
         """
         Args:
@@ -97,7 +102,7 @@ class ImageLoader:
         if save_: img.save(fp=filename)
 
 
-class MyModel(nn.Module):
+class TransferModel(nn.Module):
 
     def __init__(self, con_layers: list = ['conv4_2'], sty_layers: list = None, mean: list = [0.485, 0.456, 0.406],
                  stdv: list = [0.229, 0.224, 0.225]):
@@ -113,7 +118,6 @@ class MyModel(nn.Module):
         """
 
         super().__init__()  # call the initializer of the super class
-
         mapping_dict = {"conv1_1": 0, "conv1_2": 2,
                         "conv2_1": 5, "conv2_2": 7,
                         "conv3_1": 10, "conv3_2": 12, "conv3_3": 14, "conv3_4": 16,
@@ -177,7 +181,7 @@ class NeuralStyleTransfer:
         self.size = size
 
         # initialize the model
-        self.model = MyModel(con_layers=con_layers, sty_layers=sty_layers)
+        self.model = TransferModel(con_layers=con_layers, sty_layers=sty_layers)
         self.sty_target = self.model(sty_image)["Sty_features"]
         self.con_target = self.model(con_image)["Con_features"]
 
@@ -264,11 +268,13 @@ class NeuralStyleTransfer:
         # detach the targets from the graph to stop the flow of grads through them
         self.sty_target = [self._get_gram_matrix(x).detach() for x in self.sty_target]
         self.con_target = [x.detach() for x in self.con_target]
-
+        
         optimizer = optim.Adam([self.var_image], lr=lr, betas=betas, eps=eps)
+        writer.add_graph(self.model)
 
         for epoch in range(nb_epochs):
             print("Epoch {}:".format(epoch))
+            writer.add_image("image", self.var_image, epoch)
             for _ in tqdm(range(nb_iters)):
                 self.var_image.data.clamp_(0, 1)
                 optimizer.zero_grad()
@@ -279,6 +285,12 @@ class NeuralStyleTransfer:
 
                 tot_loss.backward()
                 optimizer.step()
+
+                iter_ = optimizer.state[optimizer.param_groups[0]["params"][-1]]["step"]
+                writer.add_scalar("loss/content", con_loss, iter_)
+                writer.add_scalar("loss/style", sty_loss, iter_)
+                writer.add_scalar("loss/total", tot_loss, iter_)
+                writer.add_scalar("loss/var", var_loss, iter_)
 
             self._print_statistics(epoch, image=self.var_image, tot_loss=tot_loss,
                                    con_loss=con_loss, sty_loss=sty_loss, var_loss=var_loss)
