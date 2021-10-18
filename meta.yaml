@@ -26,12 +26,14 @@ requirements:
     - tqdm
 
 test:
-
+  source_files:
+    - tospax/
   imports:
     - torch
     - torchvision
   commands:
-    - python3 -m unittest .
+    - ls -la
+    - python3 -m unittest tospax/tests
 
 
 about:
